@@ -11,12 +11,18 @@ const generateToken = (userId) => {
 
 // @desc    Obtenir tous les utilisateurs
 // @route   GET /users
+// Dans userController.js, fonction getUsers
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    // Seul l'admin peut voir tous les utilisateurs
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Accès non autorisé' });
+    }
+    
+    const users = await User.find().select('-password');
     res.json(users);
   } catch (error) {
-    res.status(500).json({ error: "Erreur serveur" });
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 };
 
