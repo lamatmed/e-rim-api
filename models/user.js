@@ -14,15 +14,27 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-     
     },
-       address: {
+    address: {
       type: String,
     },
     password: {
       type: String,
       required: true,
       minlength: 6,
+    },
+    role: {
+      type: String,
+      enum: ["admin", "user"],
+      default: "user",
+    },
+    blocked: {
+      type: Boolean,
+      default: false,
+    },
+    profileImage: {
+      type: String,
+      default: "",
     },
   },
   {

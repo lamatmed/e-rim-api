@@ -16,6 +16,9 @@ const protect = async (req, res, next) => {
       req.user = await User.findById(decoded.id).select("-password");
 
       if (!req.user) return res.status(401).json({ error: "Utilisateur non trouvé" });
+      
+      // Vérifier si le compte est bloqué
+      if (req.user.blocked) return res.status(403).json({ error: "Votre compte a été bloqué" });
 
       next();
     } catch (error) {
@@ -26,4 +29,13 @@ const protect = async (req, res, next) => {
   }
 };
 
-export default protect;
+// Middleware pour vérifier les droits d'admin
+const admin = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ error: "Accès réservé aux administrateurs" });
+  }
+};
+
+export { protect, admin };
