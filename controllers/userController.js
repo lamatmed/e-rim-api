@@ -85,13 +85,13 @@ export const loginUser = async (req, res) => {
     const { phone, password } = req.body;
 
     const user = await User.findOne({ phone });
-    if (!user) return res.status(400).json({ error: "Identifiants invalides" });
+    if (!user) return res.status(400).json({ error: "Aucun compte associé à ce numéro de téléphone" });
     
     // Vérifier si le compte est bloqué
     if (user.blocked) return res.status(403).json({ error: "Votre compte a été bloqué" });
 
     const isMatch = await user.matchPassword(password);
-    if (!isMatch) return res.status(400).json({ error: "Identifiants invalides" });
+    if (!isMatch) return res.status(400).json({ error: "Mot de passe incorrect" });
 
     res.json({
       message: "Connexion réussie",
