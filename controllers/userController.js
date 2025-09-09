@@ -107,7 +107,8 @@ export const loginUser = async (req, res) => {
         phone: user.phone,
         role: user.role,
         blocked: user.blocked,
-        profileImage: user.profileImage
+        profileImage: user.profileImage,
+        address:user.address
       },
       token: generateToken(user._id),
     });
