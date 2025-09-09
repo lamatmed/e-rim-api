@@ -38,6 +38,11 @@ export const registerUser = async (req, res) => {
   try {
     const { name, phone, password, profileImage } = req.body;
 
+    // Validation des champs requis
+    if (!name || !phone || !password) {
+      return res.status(400).json({ error: "Tous les champs sont obligatoires" });
+    }
+
     const existingUser = await User.findOne({ phone });
     if (existingUser) return res.status(400).json({ error: "Numéro déjà utilisé" });
 
@@ -46,25 +51,30 @@ export const registerUser = async (req, res) => {
       phone, 
       password, 
       profileImage: profileImage || "",
-      role: "user", // Par défaut
-      blocked: false // Par défaut
+      role: "user",
+      blocked: false
     });
+    
     await newUser.save();
+
+    // Générer le token après la création de l'utilisateur
+    const token = generateToken(newUser._id);
 
     res.status(201).json({
       message: "Utilisateur créé avec succès",
+      token,
       user: {
-        id: newUser._id,
+        _id: newUser._id,
         name: newUser.name,
         phone: newUser.phone,
         role: newUser.role,
         blocked: newUser.blocked,
         profileImage: newUser.profileImage
-      },
-      token: generateToken(newUser._id),
+      }
     });
   } catch (error) {
-    res.status(500).json({ error: "Erreur serveur ?" });
+    console.error("Erreur création utilisateur:", error);
+    res.status(500).json({ error: "Erreur serveur lors de la création de l'utilisateur" });
   }
 };
 
