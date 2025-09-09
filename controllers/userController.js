@@ -120,13 +120,22 @@ export const loginUser = async (req, res) => {
 // @route   PUT /users/:id
 export const updateUser = async (req, res) => {
   try {
-    const { name, address, profileImage } = req.body;
+    const { name, address, profileImage, role, blocked } = req.body;
     
-    // Seul l'admin peut changer le rôle ou le statut blocked
+    // Empêcher un admin de se bloquer lui-même
+    if (req.params.id === req.user._id.toString() && blocked) {
+      return res.status(400).json({ error: "Vous ne pouvez pas vous bloquer vous-même" });
+    }
+
+    // Empêcher un admin de se retirer ses propres privilèges admin
+    if (req.params.id === req.user._id.toString() && role && role !== "admin") {
+      return res.status(400).json({ error: "Vous ne pouvez pas vous retirer le statut administrateur" });
+    }
+
     let updateData = { name, address, profileImage };
     
     if (req.user.role === "admin") {
-      updateData = { ...updateData, role: req.body.role, blocked: req.body.blocked };
+      updateData = { ...updateData, role, blocked };
     }
 
     const user = await User.findByIdAndUpdate(
@@ -145,11 +154,14 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
-
 // @desc    Supprimer son compte
-// @route   DELETE /users/:id
-export const deleteUser = async (req, res) => {
+// @route   DELETE /users/:idexport const deleteUser = async (req, res) => {
   try {
+    // Empêcher un admin de se supprimer lui-même
+    if (req.user._id.toString() === req.params.id) {
+      return res.status(400).json({ error: "Vous ne pouvez pas supprimer votre propre compte" });
+    }
+
     // L'admin peut supprimer n'importe quel compte, un utilisateur ne peut supprimer que son propre compte
     if (req.user.role !== "admin" && req.user._id.toString() !== req.params.id) {
       return res.status(403).json({ error: "Accès refusé" });
@@ -160,7 +172,6 @@ export const deleteUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Erreur serveur" });
   }
-};
 
 // @desc    Créer un administrateur (pour usage interne)
 // @route   POST /users/admin
