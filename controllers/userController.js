@@ -64,7 +64,7 @@ export const registerUser = async (req, res) => {
       token: generateToken(newUser._id),
     });
   } catch (error) {
-    res.status(500).json({ error: "Erreur serveur" });
+    res.status(500).json({ error: "Erreur serveur ?" });
   }
 };
 
